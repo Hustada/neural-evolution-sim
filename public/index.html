@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Neural Evolution Simulation</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Roboto+Mono:wght@500&display=swap" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.9.0/p5.min.js"></script>
+    <script src="https://cdn.socket.io/4.7.4/socket.io.min.js"></script>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="container">
+        <header class="header">
+            <h1>Neural Evolution Simulation</h1>
+            <div class="controls">
+                <button id="startBtn">Start</button>
+                <button id="stopBtn">Stop</button>
+            </div>
+        </header>
+        <div id="simulation"></div>
+        <aside class="stats-container">
+            <div class="stats-box population-stats">
+                <h3>Population Stats</h3>
+                <div id="population-stats" class="stats-content"></div>
+            </div>
+            
+            <div class="stats-box neural-stats">
+                <h3>Neural Network Stats</h3>
+                <div id="neural-stats" class="stats-content"></div>
+            </div>
+            
+            <div class="stats-box performance-stats">
+                <h3>Performance Metrics</h3>
+                <div id="performance-content" class="stats-content"></div>
+            </div>
+            
+            <div class="stats-box analysis-stats">
+                <h3>AI Analysis</h3>
+                <div id="analysis-stats" class="stats-content"></div>
+            </div>
+        </aside>
+    </div>
+    <script src="sketch.js"></script>
+    <script src="ui.js"></script>
+</body>
+</html>

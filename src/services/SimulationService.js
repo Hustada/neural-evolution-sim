@@ -14,6 +14,10 @@ class SimulationService {
         this.aiAnalysis = new AIAnalysisService();
         this.codeEvolution = new CodeEvolutionService();
         
+        // Analysis tracking
+        this.lastAnalysis = null;
+        this.analysisInterval = 10; // generations between analyses
+        
         // Initialize stats tracking
         this.stats = {
             population: {
@@ -145,7 +149,6 @@ class SimulationService {
                 
                 if (this.currentStep % 10 === 0) { // Update more frequently
                     this.updateStats();
-                    this.io.emit('stats', this.stats);
                 }
             }
             
@@ -158,6 +161,7 @@ class SimulationService {
             const fitnesses = this.population.map(agent => agent.fitness);
             const distances = this.population.map(agent => agent.distanceTraveled);
             
+            // Update population stats
             this.stats.population = {
                 size: this.population.length,
                 avgFitness: fitnesses.reduce((a, b) => a + b, 0) / this.population.length,
@@ -191,6 +195,20 @@ class SimulationService {
             
             if (this.population[0]?.brain) {
                 this.calculateNeuralStats(this.population[0].brain);
+            }
+
+            // Emit both events
+            this.io.emit('stats', this.stats);
+            this.io.emit('simulationUpdate', {
+                generation: this.generationCount,
+                step: this.currentStep,
+                stats: this.stats,
+                analysis: this.lastAnalysis
+            });
+
+            // Log only at the start of new generations
+            if (this.currentStep === 0) {
+                console.log(`Starting Generation ${this.generationCount}`);
             }
 
             // Trigger AI analysis periodically
@@ -414,18 +432,40 @@ class SimulationService {
     }
 
     async analyzePerformance() {
+        // Only analyze every N generations
+        if (this.generationCount % this.analysisInterval !== 0) {
+            return;
+        }
+
         try {
+            console.log(`\n🔄 Generation ${this.generationCount} Analysis`);
             const analysis = await this.aiAnalysis.analyzeSimulation({
                 stats: this.stats,
                 generation: this.generationCount
             });
 
             if (analysis) {
-                this.io.emit('aiAnalysis', analysis);
-                await this.codeEvolution.analyzeAndEvolve(analysis, this.stats);
+                this.lastAnalysis = analysis;
+                console.log(`\n📊 Performance Score: ${analysis.performanceScore}`);
+                
+                // Send both analysis and stats to UI
+                this.io.emit('simulationUpdate', {
+                    generation: this.generationCount,
+                    step: this.currentStep,
+                    stats: this.stats,
+                    analysis: analysis
+                });
+
+                // If performance is below threshold, trigger code evolution
+                if (analysis.performanceScore < 75) {
+                    console.log('\n🧬 Performance below threshold, evolving code...');
+                    await this.codeEvolution.analyzeAndEvolve(analysis, this.stats);
+                } else {
+                    console.log('\n✅ Performance satisfactory, no evolution needed');
+                }
             }
         } catch (error) {
-            console.error('Error analyzing performance:', error);
+            console.error('\n❌ Error analyzing performance:', error);
         }
     }
 }
